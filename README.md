@@ -1,6 +1,7 @@
 # Markdone
 
-> [!Warning] Under development. Things are not working.
+> [!WARNING]
+> Under development. Things are not working.
 
 **Markdone, a ready-to-use markdown editor without cloud. Free and open source under GPLv3.**
 
