@@ -1,0 +1,121 @@
+body {
+    margin: 0;
+    font-family: "Noto Sans SC", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+main {
+    margin: 0;
+    height: calc(100% - 36px);
+    display: flex;
+    justify-content: space-between;
+}
+#text-area,#markdown-body {
+    width: calc(50% - 5px);
+}
+#text-area {
+    resize: none;
+    margin-right: 5px;
+}
+.cm-editor {
+    height: 100%;
+    overflow: scroll;
+}
+#markdown-body {
+    box-sizing: border-box;
+    padding: 5px;
+    margin-left: 5px;
+    overflow-y: scroll;
+}
+#top-menu {
+    height: 36px;
+    margin: 0;
+    background-color: rgb(248, 248, 248);
+    border-bottom: 1px solid #e4e4e4;
+    box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    color: rgb(38, 38, 38);
+}
+#top-menu > .prefix {
+    margin: 0 10px;
+}
+#top-menu > .prefix > b {
+    font-weight: 900;
+}
+.menu-button,.submenu-button {
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    border-radius: 2px;
+    margin: 0;
+    height: 100%;
+    padding: 0 8px;
+    background-color: inherit;
+    position: relative;
+    transition: background-color 200ms ease-out,
+                color 200ms ease-out;
+}
+.menu-button {
+    font-family: inherit;
+    color: rgb(0, 0, 0);
+    font-size: 0.9rem;
+}
+.menu-button.active{
+    background-color: #d8d8d8;
+}
+#menu-panel {
+    position:absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(16px);
+    box-shadow: 0px 8px 40px rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    overflow: hidden;
+}
+#menu-panel > table {
+    border: none;
+    border-collapse: collapse;
+}
+#menu-panel > table > hr  {
+    display: none;
+}
+#menu-panel > table > hr + tr {
+    width: 100%;
+    padding: 0;
+    margin: 1px 0;
+    border-top: 1px solid #e8e8e880;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+}
+.submenu-button {
+    text-align: left;
+    width: 100%;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.submenu-button:hover {
+    background-color: rgba(161, 82, 240, 0.8);
+    color: white;
+}
+.submenu-button > .name {
+    padding: 4px 20px 4px 20px;   
+}
+.submenu-button > .shortcut {
+    padding: 4px 20px 4px 4px;
+    text-align: right;
+    color: rgb(203, 203, 203);
+}
+#uploader {
+    display: none;
+}
