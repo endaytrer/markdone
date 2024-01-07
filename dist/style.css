@@ -9,6 +9,7 @@ body {
 }
 
 main {
+    position: relative;
     margin: 0;
     height: calc(100% - 36px);
     display: flex;
@@ -16,6 +17,13 @@ main {
 }
 #text-area,#markdown-body {
     width: calc(50% - 5px);
+}
+#markdown-body {
+    position: relative;
+}
+#markdown-body.full-width {
+    width: 100%;
+    position: absolute; /* make sure the sizing won't limit the markdown body */
 }
 #text-area {
     resize: none;
@@ -47,6 +55,9 @@ main {
 #top-menu > .prefix > b {
     font-weight: 900;
 }
+.menu-button {
+    padding: 0 8px;
+}
 .menu-button,.submenu-button {
     box-sizing: border-box;
     border: none;
@@ -54,7 +65,6 @@ main {
     border-radius: 2px;
     margin: 0;
     height: 100%;
-    padding: 0 8px;
     background-color: inherit;
     position: relative;
     transition: background-color 200ms ease-out,
@@ -68,54 +78,85 @@ main {
 .menu-button.active{
     background-color: #d8d8d8;
 }
-#menu-panel {
-    position:absolute;
-    top: calc(100% + 4px);
-    left: 0;
+.menu-panel {
+    position: absolute;
     z-index: 100;
-    display: flex;
-    flex-direction: column;
+    display: table;
     background-color: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(16px);
     box-shadow: 0px 8px 40px rgba(0, 0, 0, 0.12);
     border-radius: 4px;
-    overflow: hidden;
 }
-#menu-panel > table {
-    border: none;
-    border-collapse: collapse;
+#menu-panel {
+    top: calc(100% + 4px);
+    left: 0;
 }
-#menu-panel > table > hr  {
-    display: none;
+.menu-panel[id^=submenu-panel-] {
+    top: 0;
+    left: 100%;
+    border-radius: 0 4px 4px 0;
 }
-#menu-panel > table > hr + tr {
-    width: 100%;
+.menu-panel > .separator {
+    box-sizing: border-box;
     padding: 0;
-    margin: 1px 0;
-    border-top: 1px solid #e8e8e880;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
+    height: 1px;
+    background-color: rgba(233, 233, 233, 0.5);
+    border-top: 2px outset solid rgba(255, 255, 255, 0.5);
+    border-bottom: 2px outset solid rgba(255, 255, 255, 0.5);
+}
+
+.menu-panel:not([id^=submenu-panel-]) > .submenu-button:first-of-type > .name {
+    border-radius: 4px 0 0 0;
+}
+
+.menu-panel > .submenu-button:first-of-type > .submenu-indicator,
+.menu-panel > .submenu-button:first-of-type > .shortcut  {
+    border-radius: 0 4px 0 0;
+}
+.menu-panel:not([id^=submenu-panel-]) > .submenu-button:last-of-type > .name {
+    border-radius: 0 0 0 4px;
+}
+.menu-panel > .submenu-button:last-of-type > .submenu-indicator,
+.menu-panel > .submenu-button:last-of-type > .shortcut  {
+    border-radius: 0 0 4px 0;
 }
 .submenu-button {
-    text-align: left;
     width: 100%;
     font-weight: 400;
     white-space: nowrap;
+    border-radius: 4px;
+    margin: 20px 0;
 }
-
-.submenu-button:hover {
+.submenu-button.active > td{
+    background-color: #eaeaea;
+}
+.submenu-button:hover > td {
     background-color: rgba(161, 82, 240, 0.8);
     color: white;
 }
+
+.submenu-button > td {
+    padding: 4px;
+}
 .submenu-button > .name {
-    padding: 4px 20px 4px 20px;   
+    text-align: left;
+    padding-left: 20px;
 }
 .submenu-button > .shortcut {
-    padding: 4px 20px 4px 4px;
+    padding-right: 20px;
+}
+.submenu-button > .submenu-indicator {
+    padding-right: 10px;
+}
+.submenu-button > .shortcut,
+.submenu-button > .submenu-indicator {
     text-align: right;
     color: rgb(203, 203, 203);
 }
+
 #uploader {
+    display: none;
+}
+#text-area.hiding-in-print, #top-menu.hiding-in-print {
     display: none;
 }

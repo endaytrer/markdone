@@ -3,6 +3,7 @@ import { actions } from './actions';
 const divider = {}
 
 const menu = {
+    submenu: {
     file: {
         name: "File",
         submenu: {
@@ -19,6 +20,7 @@ const menu = {
                 name: "Export...",
                 submenu: {
                     pdf: { name: "PDF" },
+                    divider,
                     html: { name: "HTML" },
                 }
             },
@@ -34,13 +36,8 @@ const menu = {
         submenu: {
             undo: { name: "Undo", disabled: true },
             redo: { name: "Redo", disabled: true },
-            d0: divider,
-            cut: { name: "Cut" },
-            copy: { name: "Copy" },
-            paste: { name: "Paste" },
             d1: divider,
-            find: { name: "Find" },
-            replace: { name: "Replace" },
+            find: { name: "Find / Replace..." }
         }
     },
     help: {
@@ -49,6 +46,7 @@ const menu = {
             about: { name: "About"}
         }
     }
+}
 }
 let shortcuts = {
     "file.new": "C-N",
@@ -60,111 +58,163 @@ let shortcuts = {
     "file.exit": "C-W",
     "edit.undo": "C-Z",
     "edit.redo": "CS-Z",
-    "edit.cut": "C-X",
-    "edit.copy": "C-C",
-    "edit.paste": "C-V",
-    "edit.find": "C-F",
-    "edit.replace": "C-H"
+    "edit.find": "C-F"
 }
+/**
+ * Use it every time shortcut is changed
+ * @param {object} shortcuts 
+ */
+function invertMapShortcuts(shortcuts) {
+    const ans = {};
+    for (const key in shortcuts) {
+        const val = shortcuts[key];
+        if (val in ans) {
+            ans[val].push(key);
+        } else {
+            ans[val] = [key]
+        }
+    }
+    return ans;
+}
+let shortcutInvertMap = invertMapShortcuts(shortcuts);
 const modifierMap = {
+    'M': "Meta",
     'C': "Ctrl",
-    'S': "Shift",
     'A': "Alt",
-    'M': "Meta"
+    'S': "Shift"
 };
 
 
 let menuOpened = false;
-let currentParent = null;
-const menuPanel = document.createElement("div");
-const menuTable = document.createElement("table");
-menuPanel.appendChild(menuTable)
+let currentParents = [null, null, null];
+const menuPanels = currentParents.map(() => document.createElement('div'));
+
 /**
  * @param {HTMLDivElement} parent 
  */
-function renderMenuPanel(parent) {
-    if (parent === currentParent) return;
-    closeMenu();
-    menuOpened = true;
-    currentParent = parent;
+function renderMenuPanel(parent, level) {
+    if (parent === currentParents[level]) return;
+    currentParents[level] = parent;
+    if (level >= menuPanels.length) return;
+
+    // remove the parent of it and sub-layers;
+    for (let i = level; i < menuPanels.length; i++) {
+        if (menuPanels[i].parentElement) {
+            menuPanels[i].parentElement.classList.remove("active");
+            menuPanels[i].parentElement.removeChild(menuPanels[i])
+        }
+    }
+    menuPanels[level].innerHTML = '';
+    // indexing into the menu item
     const { id } = parent;
-    const menuKey = id.split("-")[1];
-    const menuItem = menu[menuKey];
+    const menuKeys = id.split('-').slice(1);
+    let menuItem = menu;
+    for (const menuKey of menuKeys) {
+        menuItem = menuItem.submenu[menuKey]
+    }
     for (const subKey in menuItem.submenu) {
         const value = menuItem.submenu[subKey];
         if (value == divider) {
-            const line = document.createElement("hr");
-            menuTable.appendChild(line);
+            const line = document.createElement("td");
+            line.className="separator";
+            line.colSpan = 2;
+            menuPanels[level].appendChild(line);
             continue;
         }
         const element = document.createElement("tr");
         element.className = "submenu-button";
-        if (`${menuKey}.${subKey}` in shortcuts) {
-            const shortcut = shortcuts[`${menuKey}.${subKey}`];
+        element.innerHTML = `<td class="name">${value.name}</td>`
+        let isSubmenu = false;
+        const menuKeyStr = menuKeys.join('.')
+        if (`${menuKeyStr}.${subKey}` in shortcuts) {
+            const shortcut = shortcuts[`${menuKeyStr}.${subKey}`];
             let [modifiers, key] = shortcut.split('-');
             modifiers = modifiers.split('').map((v) => modifierMap[v])
             let str = modifiers.reduce((p, v) => p + v + "+", "")
             str += key
-            element.innerHTML = `<td class="name">${value.name}</td> <td class="shortcut">${str}</td>`
+            element.innerHTML += `<td class="shortcut">${str}</td>`
+        } else if (value.submenu) {
+            // Key with shortcut shall not have submenu
+            element.innerHTML += `<td class="submenu-indicator">&#128898;</td>`;
+            isSubmenu = true;
         } else {
-            element.innerHTML = `<td class="name">${value.name}</td> <td></td>`;
+            element.innerHTML += `<td class="shortcut"></td>`;
         }
-        element.id = `menu-${menuKey}-${subKey}`;
-        element.addEventListener('mouseenter', (e) => {
-        })
-        element.addEventListener('mouseleave', (e) => {
-        })
-        element.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const indexer = `${menuKey}.${subKey}`;
-            if (indexer in actions) {
-                await actions[indexer]()
-            } else {
-                console.log(`${menuKey}.${subKey}.click()`)
-            }
-            closeMenu();
-        })
-        menuTable.appendChild(element);
+        element.id = `${id}-${subKey}`;
+        if (!isSubmenu) {
+            element.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const indexer = `${menuKeyStr}.${subKey}`;
+    
+                // if unimplemented, throws error.
+                await actions[indexer]();
+                closeMenu(0);
+            })
+
+            element.addEventListener('mouseenter', (e) => {
+                e.stopPropagation();
+                closeMenu(level + 1);
+                currentParents[level] = parent;
+            })
+        } else {
+            // element.addEventListener('click', (e) => {
+            //     e.stopPropagation();
+            //     renderMenuPanel(element, level + 1)
+            // })
+
+            element.addEventListener('mouseenter', (e) => {
+                e.stopPropagation();
+                renderMenuPanel(element, level + 1);
+            })
+        }
+        menuPanels[level].appendChild(element);
     }
     parent.classList.add("active");
-    parent.appendChild(menuPanel);
+    parent.appendChild(menuPanels[level]);
 }
 /**
  * @param {HTMLDivElement} item 
  */
 function menuItemClick(item) {
-    console.log("click")
     menuOpened = true;
-    renderMenuPanel(item);
+    renderMenuPanel(item, 0);
 }
 /**
  * @param {HTMLDivElement} item 
  */
 function menuItemHover(item) {
     if (!menuOpened) return;
-    renderMenuPanel(item);
+    renderMenuPanel(item, 0);
 }
 
 /**
  * @param {HTMLDivElement} parent 
  */
-export function closeMenu() {
-    if (menuPanel.parentElement) {
-        menuPanel.parentElement.classList.remove("active");
-        menuPanel.parentElement.removeChild(menuPanel)
+export function closeMenu(level) {
+    for (let i = level; i < menuPanels.length; i++) {
+        if (menuPanels[i].parentElement) {
+            menuPanels[i].parentElement.classList.remove("active");
+            menuPanels[i].parentElement.removeChild(menuPanels[i])
+        }
+        currentParents[i] = null;
     }
-    menuOpened = false;
-    currentParent = null;
-    menuTable.innerHTML = "";
+    if (level === 0) {
+        menuOpened = false;
+    }
 }
 
 /**
  * @param {HTMLDivElement} parent 
  */
 export function renderMenu(parent) {
-    menuPanel.id = "menu-panel";
-    for (const key in menu) {
-        const value = menu[key];
+    menuPanels[0].id = "menu-panel";
+    menuPanels.forEach((val, idx) => {
+        if (idx !== 0)
+            val.id = `submenu-panel-${idx}`;
+        val.className = "menu-panel";
+    })
+    for (const key in menu.submenu) {
+        const value = menu.submenu[key];
         const element = document.createElement("button");
         element.className = "menu-button";
         element.innerText = value.name;
@@ -177,7 +227,23 @@ export function renderMenu(parent) {
     }
 }
 
-document.onkeydown = (ev) => {
+document.onkeydown = async (ev) => {
     // ev.preventDefault()
-    console.log(ev.key)
+    let keySequence = "";
+    // in order of meta, ctrl, alt and shift
+    if (ev.metaKey) keySequence += "M";
+    if (ev.ctrlKey) keySequence += "C";
+    if (ev.altKey) keySequence += "A";
+    if (ev.shiftKey) keySequence += "S";
+    // if no modifiers, continue;
+    if (keySequence === "") return;
+    if (ev.key === 'Meta' || ev.key === 'Ctrl' || ev.key === 'Alt' || ev.key === 'Shift') return;
+    keySequence += "-" + ev.key.toUpperCase();
+    if (!(keySequence in shortcutInvertMap)) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    for (const action of shortcutInvertMap[keySequence]) {
+        // if unimplemented, throws error.
+        await actions[action]();
+    }
 }

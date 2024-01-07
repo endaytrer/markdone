@@ -2,10 +2,14 @@ import * as wasm from "libmarkdown";
 import renderMathInElement from "katex/contrib/auto-render/auto-render"
 import { basicSetup } from 'codemirror';
 import { EditorView, ViewPlugin, keymap } from '@codemirror/view';
-import { indentWithTab } from '@codemirror/commands';
+import { indentWithTab, undo, redo } from '@codemirror/commands';
+import { openSearchPanel, closeSearchPanel, searchPanelOpen } from '@codemirror/search';
 import { indentUnit } from '@codemirror/language';
 import { markdown } from '@codemirror/lang-markdown';
 
+/**
+ * @type {EditorView}
+ */
 let editor;
 let uploader;
 
@@ -45,17 +49,6 @@ export function render(body) {
             if (index != lines.length - 1)
                 pre.innerHTML += '\n'
         });
-        const copyButton = document.createElement("button");
-        copyButton.className="copy-button"
-        copyButton.innerHTML = '<i class="fa-regular fa-clipboard"></i>'
-        copyButton.addEventListener('click', (_) => {
-            navigator.clipboard.writeText(pre.innerText)
-            pre.setAttribute("copied", "true")
-            setTimeout(() => {
-                pre.removeAttribute("copied");
-            }, 500)
-        });
-        title.appendChild(copyButton)
         wrapper.insertBefore(title, wrapper.firstChild);
 
     })
@@ -142,4 +135,23 @@ export async function open() {
         to: editor.state.doc.length,
         insert: result
     }})
+}
+
+export function newFile() {
+    editor.dispatch({changes: {
+        from: 0,
+        to: editor.state.doc.length,
+    }})
+}
+
+export function editorUndo() {
+    undo(editor)
+}
+
+export function editorRedo() {
+    redo(editor)
+}
+
+export function find() {
+    openSearchPanel(editor)
 }

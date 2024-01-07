@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@codemirror/lang-markdown": "^6.2.3",
-    "@codemirror/view": "^6.23.0",
     "codemirror": "^6.0.1",
     "katex": "^0.16.9",
     "libmarkdown": "file:libmarkdown/pkg"
