@@ -21,6 +21,7 @@ Markdone is deployed at [markdone.danielgu.org](https://markdone.danielgu.org).
 - [x] Real-time preview
 - [x] Save to local file
 - [x] Load from local file
+- [x] Print or print to PDF
 - [ ] Local-storage filesystem to hold workspace
 - [ ] Remote hosting for images
 - [ ] Packing ans saving

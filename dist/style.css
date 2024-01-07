@@ -127,7 +127,11 @@ main {
     border-radius: 4px;
     margin: 20px 0;
 }
-.submenu-button.active > td{
+.submenu-button > td {
+    transition: background-color 200ms ease-out,
+                color 200ms ease-out;
+}
+.submenu-button.active > td {
     background-color: #eaeaea;
 }
 .submenu-button:hover > td {
